@@ -4,4 +4,6 @@ version = "0.1.0"
 description = "Code Snippets used in my 'Learning Python to buy shoes' talk"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "pyautogui>=0.9.54",
+]
