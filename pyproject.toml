@@ -5,7 +5,9 @@ description = "Code Snippets used in my 'Learning Python to buy shoes' talk"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi[standard]>=0.128.1",
     "pyautogui>=0.9.54",
     "requests>=2.32.5",
+    "ruff>=0.15.0",
     "selenium>=4.40.0",
 ]
