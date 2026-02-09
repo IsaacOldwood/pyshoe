@@ -2,7 +2,7 @@ import requests
 from typing import Mapping
 
 
-def build_headers(token: str) -> dict[str, str]:
+def _build_headers(token: str) -> dict[str, str]:
     """Build the request headers from a token.
 
     Args:
@@ -17,7 +17,7 @@ def build_headers(token: str) -> dict[str, str]:
     }
 
 
-def add_to_cart(headers: dict[str, str]) -> str:
+def _add_to_cart(headers: dict[str, str]) -> str:
     """Add items to a cart.
 
     Args:
@@ -40,7 +40,7 @@ def add_to_cart(headers: dict[str, str]) -> str:
     return json["checkout_url"]
 
 
-def checkout(
+def _checkout(
     headers: dict[str, str],
     checkout_url: str,
     payment_info: Mapping[str, str | Mapping],
@@ -68,6 +68,21 @@ def checkout(
     return r.json()
 
 
+def main(token: str, payment_info: Mapping[str, str | Mapping]) -> dict:
+    """Main script to buy stuff.
+
+    Args:
+        token (str): User token for a given cart.
+        payment_info (Mapping[str, str  |  Mapping]): Payment info.
+
+    Returns:
+        dict: Results of checkout.
+    """
+    headers = _build_headers(token)
+    checkout_url = _add_to_cart(headers=headers)
+    return _checkout(headers, checkout_url, payment_info)
+
+
 if __name__ == "__main__":
     # User 1
     TOKEN = "################################"
@@ -75,9 +90,7 @@ if __name__ == "__main__":
         "email": "email1@example.com",
         # ...
     }
-    headers = build_headers(TOKEN)
-    checkout_url = add_to_cart(headers=headers)
-    result = checkout(headers, checkout_url, user_info)
+    main(TOKEN, user_info)
 
     # User 2
     TOKEN = "################################"
@@ -85,6 +98,4 @@ if __name__ == "__main__":
         "email": "email2@example.com",
         # ...
     }
-    headers = build_headers(TOKEN)
-    checkout_url = add_to_cart(headers=headers)
-    result = checkout(headers, checkout_url, user_info)
+    main(TOKEN, user_info)
