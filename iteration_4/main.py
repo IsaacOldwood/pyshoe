@@ -84,18 +84,19 @@ def main(token: str, payment_info: Mapping[str, str | Mapping]) -> dict:
 
 
 if __name__ == "__main__":
-    # User 1
-    TOKEN = "################################"
-    user_info = {
+    # User info setup
+    TOKEN1 = "################################"
+    user_info1 = {
         "email": "email1@example.com",
         # ...
     }
-    main(TOKEN, user_info)
-
-    # User 2
-    TOKEN = "################################"
-    user_info = {
+    TOKEN2 = "################################"
+    user_info2 = {
         "email": "email2@example.com",
         # ...
     }
-    main(TOKEN, user_info)
+
+    # Run script
+    inputs = [(TOKEN1, user_info1), (TOKEN2, user_info2)]
+    for token, user_info in inputs:
+        main(token, user_info)
