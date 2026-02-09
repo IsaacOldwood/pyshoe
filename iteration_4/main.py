@@ -1,5 +1,6 @@
-import requests
+from httpx import AsyncClient
 from typing import Mapping
+import asyncio
 
 
 def _build_headers(token: str) -> dict[str, str]:
@@ -17,11 +18,12 @@ def _build_headers(token: str) -> dict[str, str]:
     }
 
 
-def _add_to_cart(headers: dict[str, str]) -> str:
+async def _add_to_cart(headers: dict[str, str], client: AsyncClient) -> str:
     """Add items to a cart.
 
     Args:
         headers (dict[str, str]): Request headers, including auth.
+        client (AsyncClient): Async request client.
 
     Returns:
         str: Checkout URL
@@ -34,16 +36,17 @@ def _add_to_cart(headers: dict[str, str]) -> str:
             "variant_id": "694d83a3252dbe00127cc4a3",
         }
     ]
-    r = requests.put(url=url, headers=headers, json=payload)
+    r = await client.put(url=url, headers=headers, json=payload)
     json = r.json()
     # Get checkout URL
     return json["checkout_url"]
 
 
-def _checkout(
+async def _checkout(
     headers: dict[str, str],
     checkout_url: str,
     payment_info: Mapping[str, str | Mapping],
+    client: AsyncClient,
 ) -> dict:
     """Checkout a given cart.
 
@@ -51,6 +54,7 @@ def _checkout(
         headers (dict[str, str]): Request headers, including auth.
         checkout_url (str): The checkout URl for a given cart
         payment_info (Mapping[str, str | Mapping]): User payment info.
+        client (AsyncClient): Async request client.
 
     Returns:
         dict: The checkout JSON response.
@@ -64,23 +68,34 @@ def _checkout(
         # ..
     }
 
-    r = requests.post(url=checkout_url, headers=headers, json=payload)
+    r = await client.post(url=checkout_url, headers=headers, json=payload)
     return r.json()
 
 
-def main(token: str, payment_info: Mapping[str, str | Mapping]) -> dict:
+async def main(
+    token: str, payment_info: Mapping[str, str | Mapping], client: AsyncClient
+) -> dict:
     """Main script to buy stuff.
 
     Args:
         token (str): User token for a given cart.
         payment_info (Mapping[str, str  |  Mapping]): Payment info.
+        client (AsyncClient): Async request client.
 
     Returns:
         dict: Results of checkout.
     """
     headers = _build_headers(token)
-    checkout_url = _add_to_cart(headers=headers)
-    return _checkout(headers, checkout_url, payment_info)
+    checkout_url = await _add_to_cart(headers, client)
+    return await _checkout(headers, checkout_url, payment_info, client)
+
+
+async def run(inputs: list[tuple[str, dict]]):
+    async with AsyncClient() as client:
+        tasks = []
+        for token, user_info in inputs:
+            tasks.append(main(token, user_info, client))
+        return await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":
@@ -98,5 +113,4 @@ if __name__ == "__main__":
 
     # Run script
     inputs = [(TOKEN1, user_info1), (TOKEN2, user_info2)]
-    for token, user_info in inputs:
-        main(token, user_info)
+    asyncio.run(run(inputs))
